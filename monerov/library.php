@@ -8,9 +8,9 @@
  *
  * @author Kacper Rowinski <krowinski@implix.com>
  * http://implix.com
- * Modified to work with monerov-rpc wallet by Serhack and cryptochangements
+ * Modified to work with byterub-rpc wallet by Serhack and cryptochangements
  */
-class MoneroV_Library
+class ByteRub_Library
 {
     protected $url = null, $is_debug = false, $parameters_structure = 'array';
     protected $curl_options = array(
@@ -184,7 +184,7 @@ class MoneroV_Library
         }
         // check for curl error
         if (0 < curl_errno($ch)) {
-           echo '[ERROR] Failed to connect to monerov-wallet-rpc at ' . $this->host . ' port '. $this->port .'</br>';
+           echo '[ERROR] Failed to connect to byterub-wallet-rpc at ' . $this->host . ' port '. $this->port .'</br>';
         }
         // close the connection
         curl_close($ch);
@@ -220,7 +220,7 @@ class MoneroV_Library
     }
 
     /* 
-     * The following functions can all be called to interact with the MoneroV RPC wallet
+     * The following functions can all be called to interact with the ByteRub RPC wallet
      * They will majority of them will return the result as an array
      * Example: $daemon->address(); where $daemon is an instance of this class, will return the wallet address as string within an array
      */
@@ -281,7 +281,7 @@ class MoneroV_Library
 
     public function make_uri($address, $amount, $recipient_name = null, $description = null)
     {
-        // If I pass 1, it will be 0.0000001 xmv. Then
+        // If I pass 1, it will be 0.0000001 btr. Then
         $new_amount = $amount * 100000000;
 
         $uri_params = array('address' => $address, 'amount' => $new_amount, 'payment_id' => '', 'recipient_name' => $recipient_name, 'tx_description' => $description);
@@ -327,11 +327,11 @@ class NodeTools
     {
       if(!testnet)
       {
-        $this->url = 'https://monerovexplorer.com';
+        $this->url = 'https://byterubexplorer.com';
       }
       if(testnet)
       {
-        $this->url = 'https://monerovexplorer.com';
+        $this->url = 'https://byterubexplorer.com';
       }
     }
     

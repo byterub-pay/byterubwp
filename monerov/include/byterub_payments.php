@@ -1,18 +1,18 @@
 <?php
 
 /* 
- * Main Gateway of MoneroV using a daemon online 
+ * Main Gateway of ByteRub using a daemon online 
  * Authors: Serhack and cryptochangements
  */
 
 require_once("cryptonote.php");
 
-class MoneroV_Gateway extends WC_Payment_Gateway
+class ByteRub_Gateway extends WC_Payment_Gateway
 {
     private $reloadTime = 17000;
     private $discount;
     private $confirmed = false;
-    private $monerov_daemon;
+    private $byterub_daemon;
     private $non_rpc = false;
     private $zero_cofirm = false;
     private $cryptonote;
@@ -20,10 +20,10 @@ class MoneroV_Gateway extends WC_Payment_Gateway
 
     function __construct()
     {
-        $this->id = "monerov_gateway";
-        $this->method_title = __("MoneroV GateWay", 'monerov_gateway');
-        $this->method_description = __("MoneroV Payment Gateway Plug-in for WooCommerce. You can find more information about this payment gateway on our website. You'll need a daemon online for your address.", 'monerov_gateway');
-        $this->title = __("MoneroV Gateway", 'monerov_gateway');
+        $this->id = "byterub_gateway";
+        $this->method_title = __("ByteRub GateWay", 'byterub_gateway');
+        $this->method_description = __("ByteRub Payment Gateway Plug-in for WooCommerce. You can find more information about this payment gateway on our website. You'll need a daemon online for your address.", 'byterub_gateway');
+        $this->title = __("ByteRub Gateway", 'byterub_gateway');
         $this->version = "2.0";
         //
         $this->icon = apply_filters('woocommerce_offline_icon', '');
@@ -34,7 +34,7 @@ class MoneroV_Gateway extends WC_Payment_Gateway
         $this->init_form_fields();
         $this->host = $this->get_option('daemon_host');
         $this->port = $this->get_option('daemon_port');
-        $this->address = $this->get_option('monerov_address');
+        $this->address = $this->get_option('byterub_address');
         $this->viewKey = $this->get_option('viewKey');
         $this->discount = $this->get_option('discount');
         $this->accept_zero_conf = $this->get_option('zero_conf');
@@ -81,7 +81,7 @@ class MoneroV_Gateway extends WC_Payment_Gateway
             add_filter('woocommerce_currency_symbol', array($this,'add_my_currency_symbol'), 10, 2);
             add_action('woocommerce_email_before_order_table', array($this, 'email_instructions'), 10, 2);
         }
-        $this->monerov_daemon = new MoneroV_Library($this->host, $this->port);
+        $this->byterub_daemon = new ByteRub_Library($this->host, $this->port);
         $this->cryptonote = new Cryptonote();
 	    
 	$this->supports = array( 'subscriptions', 'products' );
@@ -99,98 +99,98 @@ class MoneroV_Gateway extends WC_Payment_Gateway
 
     public function get_icon()
     {
-        return apply_filters('woocommerce_gateway_icon', "<img src='http://cdn.monerointegrations.com/logomonerov.png' />");
+        return apply_filters('woocommerce_gateway_icon', "<img src='http://cdn.monerointegrations.com/logobyterub.png' />");
     }
 
     public function init_form_fields()
     {
         $this->form_fields = array(
             'enabled' => array(
-                'title' => __('Enable / Disable', 'monerov_gateway'),
-                'label' => __('Enable this payment gateway', 'monerov_gateway'),
+                'title' => __('Enable / Disable', 'byterub_gateway'),
+                'label' => __('Enable this payment gateway', 'byterub_gateway'),
                 'type' => 'checkbox',
                 'default' => 'no'
             ),
 
             'title' => array(
-                'title' => __('Title', 'monerov_gateway'),
+                'title' => __('Title', 'byterub_gateway'),
                 'type' => 'text',
-                'desc_tip' => __('Payment title the customer will see during the checkout process.', 'monerov_gateway'),
-                'default' => __('MoneroV XMV Payment', 'monerov_gateway')
+                'desc_tip' => __('Payment title the customer will see during the checkout process.', 'byterub_gateway'),
+                'default' => __('ByteRub BTR Payment', 'byterub_gateway')
             ),
             'description' => array(
-                'title' => __('Description', 'monerov_gateway'),
+                'title' => __('Description', 'byterub_gateway'),
                 'type' => 'textarea',
-                'desc_tip' => __('Payment description the customer will see during the checkout process.', 'monerov_gateway'),
-                'default' => __('Pay securely using XMV.', 'monerov_gateway')
+                'desc_tip' => __('Payment description the customer will see during the checkout process.', 'byterub_gateway'),
+                'default' => __('Pay securely using BTR.', 'byterub_gateway')
 
             ),
             'use_viewKey' => array(
-                'title' => __('Use ViewKey', 'monerov_gateway'),
-                'label' => __(' Verify Transaction with ViewKey ', 'monerov_gateway'),
+                'title' => __('Use ViewKey', 'byterub_gateway'),
+                'label' => __(' Verify Transaction with ViewKey ', 'byterub_gateway'),
                 'type' => 'checkbox',
-                'description' => __('Fill in the Address and ViewKey fields to verify transactions with your ViewKey', 'monerov_gateway'),
+                'description' => __('Fill in the Address and ViewKey fields to verify transactions with your ViewKey', 'byterub_gateway'),
                 'default' => 'no'
             ),
-            'monerov_address' => array(
-                'title' => __('MoneroV Address', 'monerov_gateway'),
+            'byterub_address' => array(
+                'title' => __('ByteRub Address', 'byterub_gateway'),
                 'label' => __('Useful for people that have not a daemon online'),
                 'type' => 'text',
-                'desc_tip' => __('MoneroV Wallet Address', 'monerov_gateway')
+                'desc_tip' => __('ByteRub Wallet Address', 'byterub_gateway')
             ),
             'viewKey' => array(
-                'title' => __('Secret ViewKey', 'monerov_gateway'),
+                'title' => __('Secret ViewKey', 'byterub_gateway'),
                 'label' => __('Secret ViewKey'),
                 'type' => 'text',
-                'desc_tip' => __('Your secret ViewKey', 'monerov_gateway')
+                'desc_tip' => __('Your secret ViewKey', 'byterub_gateway')
             ),
             'use_rpc' => array(
-                'title' => __('Use monerov-wallet-rpc', 'monerov_gateway'),
-                'label' => __(' Verify transactions with the monerov-wallet-rpc ', 'monerov_gateway'),
+                'title' => __('Use byterub-wallet-rpc', 'byterub_gateway'),
+                'label' => __(' Verify transactions with the byterub-wallet-rpc ', 'byterub_gateway'),
                 'type' => 'checkbox',
-                'description' => __('This must be setup seperately', 'monerov_gateway'),
+                'description' => __('This must be setup seperately', 'byterub_gateway'),
                 'default' => 'no'
             ),
             'daemon_host' => array(
-                'title' => __('MoneroV wallet RPC Host/ IP', 'monerov_gateway'),
+                'title' => __('ByteRub wallet RPC Host/ IP', 'byterub_gateway'),
                 'type' => 'text',
                 'desc_tip' => __('This is the Daemon Host/IP to authorize the payment with port', 'monero_gateway'),
                 'default' => 'localhost',
             ),
             'daemon_port' => array(
-                'title' => __('MoneroV wallet RPC port', 'monerov_gateway'),
+                'title' => __('ByteRub wallet RPC port', 'byterub_gateway'),
                 'type' => 'text',
-                'desc_tip' => __('This is the Daemon Host/IP to authorize the payment with port', 'monerov_gateway'),
+                'desc_tip' => __('This is the Daemon Host/IP to authorize the payment with port', 'byterub_gateway'),
                 'default' => '18080',
             ),
             'discount' => array(
-                'title' => __('% discount for using XMV', 'monerov_gateway'),
+                'title' => __('% discount for using BTR', 'byterub_gateway'),
 
-                'desc_tip' => __('Provide a discount to your customers for making a private payment with XMV!', 'monerov_gateway'),
-                'description' => __('Do you want to spread the word about MoneroV? Offer a small discount! Leave this empty if you do not wish to provide a discount', 'monerov_gateway'),
+                'desc_tip' => __('Provide a discount to your customers for making a private payment with BTR!', 'byterub_gateway'),
+                'description' => __('Do you want to spread the word about ByteRub? Offer a small discount! Leave this empty if you do not wish to provide a discount', 'byterub_gateway'),
                 'type' => __('number'),
                 'default' => '5'
 
             ),
             'environment' => array(
-                'title' => __(' Testnet', 'monerov_gateway'),
-                'label' => __(' Check this if you are using testnet ', 'monerov_gateway'),
+                'title' => __(' Testnet', 'byterub_gateway'),
+                'label' => __(' Check this if you are using testnet ', 'byterub_gateway'),
                 'type' => 'checkbox',
-                'description' => __('Check this box if you are using testnet', 'monerov_gateway'),
+                'description' => __('Check this box if you are using testnet', 'byterub_gateway'),
                 'default' => 'no'
             ),
             'zero_conf' => array(
-                'title' => __(' Accept 0 conf txs', 'monerov_gateway'),
-                'label' => __(' Accept 0-confirmation transactions ', 'monerov_gateway'),
+                'title' => __(' Accept 0 conf txs', 'byterub_gateway'),
+                'label' => __(' Accept 0-confirmation transactions ', 'byterub_gateway'),
                 'type' => 'checkbox',
-                'description' => __('This is faster but less secure', 'monerov_gateway'),
+                'description' => __('This is faster but less secure', 'byterub_gateway'),
                 'default' => 'no'
             ),
             'onion_service' => array(
-                'title' => __(' SSL warnings ', 'monerov_gateway'),
-                'label' => __(' Check to Silence SSL warnings', 'monerov_gateway'),
+                'title' => __(' SSL warnings ', 'byterub_gateway'),
+                'label' => __(' Check to Silence SSL warnings', 'byterub_gateway'),
                 'type' => 'checkbox',
-                'description' => __('Check this box if you are running on an Onion Service (Suppress SSL errors)', 'monerov_gateway'),
+                'description' => __('Check this box if you are running on an Onion Service (Suppress SSL errors)', 'byterub_gateway'),
                 'default' => 'no'
             ),
         );
@@ -198,15 +198,15 @@ class MoneroV_Gateway extends WC_Payment_Gateway
 
     public function add_my_currency($currencies)
     {
-        $currencies['XMV'] = __('MoneroV', 'woocommerce');
+        $currencies['BTR'] = __('ByteRub', 'woocommerce');
         return $currencies;
     }
 
     public function add_my_currency_symbol($currency_symbol, $currency)
     {
         switch ($currency) {
-            case 'XMV':
-                $currency_symbol = 'XMV';
+            case 'BTR':
+                $currency_symbol = 'BTR';
                 break;
         }
         return $currency_symbol;
@@ -214,10 +214,10 @@ class MoneroV_Gateway extends WC_Payment_Gateway
 
     public function admin_options()
     {
-        $this->log->add('MoneroV_gateway', '[SUCCESS] MoneroV Settings OK');
-        echo "<h1>MoneroV Payment Gateway</h1>";
+        $this->log->add('ByteRub_gateway', '[SUCCESS] ByteRub Settings OK');
+        echo "<h1>ByteRub Payment Gateway</h1>";
 
-        echo "<p>Welcome to MoneroV Extension for WooCommerce. Getting started: Make a connection with daemon <a href='https://reddit.com/u/serhack'>Contact Me</a>";
+        echo "<p>Welcome to ByteRub Extension for WooCommerce. Getting started: Make a connection with daemon <a href='https://reddit.com/u/serhack'>Contact Me</a>";
         echo "<div style='border:1px solid #DDD;padding:5px 10px;font-weight:bold;color:#223079;background-color:#9ddff3;'>";
         
         if(!$this->non_rpc) // only try to get balance data if using wallet-rpc
@@ -227,14 +227,14 @@ class MoneroV_Gateway extends WC_Payment_Gateway
         echo "<table class='form-table'>";
         $this->generate_settings_html();
         echo "</table>";
-        echo "<h4>Learn more about using monerov-wallet-rpc <a href=\"https://github.com/monerov-integrations/monerowp/blob/master/README.md\">here</a> </h4>";
+        echo "<h4>Learn more about using byterub-wallet-rpc <a href=\"https://github.com/monero-integrations/monerowp/blob/master/README.md\">here</a> </h4>";
     }
 
     public function getamountinfo()
     {
-        $wallet_amount = $this->monerov_daemon->getbalance();
+        $wallet_amount = $this->byterub_daemon->getbalance();
         if (!isset($wallet_amount)) {
-            $this->log->add('MoneroV_gateway', '[ERROR] Cannot connect to monerov-wallet-rpc');
+            $this->log->add('ByteRub_gateway', '[ERROR] Cannot connect to byterub-wallet-rpc');
             echo "</br>Your balance is: Not Available </br>";
             echo "Unlocked balance: Not Available";
         }
@@ -246,15 +246,15 @@ class MoneroV_Gateway extends WC_Payment_Gateway
             $unlocked_wallet_amount = $wallet_amount['unlocked_balance'] / 1000000000000;
             $unlocked_amount_rounded = round($unlocked_wallet_amount, 6);
         
-            echo "Your balance is: " . $real_amount_rounded . " XMV </br>";
-            echo "Unlocked balance: " . $unlocked_amount_rounded . " XMV </br>";
+            echo "Your balance is: " . $real_amount_rounded . " BTR </br>";
+            echo "Unlocked balance: " . $unlocked_amount_rounded . " BTR </br>";
         }
     }
 
     public function process_payment($order_id)
     {
         $order = wc_get_order($order_id);
-        $order->update_status('on-hold', __('Awaiting offline payment', 'monerov_gateway'));
+        $order->update_status('on-hold', __('Awaiting offline payment', 'byterub_gateway'));
         // Reduce stock levels
         $order->reduce_order_stock();
 
@@ -273,8 +273,8 @@ class MoneroV_Gateway extends WC_Payment_Gateway
 
     public function validate_fields()
     {
-        if ($this->check_monerov() != TRUE) {
-            echo "<div class=\"error\"><p>Your MoneroV Address doesn't look valid. Have you checked it?</p></div>";
+        if ($this->check_byterub() != TRUE) {
+            echo "<div class=\"error\"><p>Your ByteRub Address doesn't look valid. Have you checked it?</p></div>";
         }
         if(!$this->check_viewKey())
         {
@@ -282,7 +282,7 @@ class MoneroV_Gateway extends WC_Payment_Gateway
         }
         if($this->check_checkedBoxes())
         {
-            echo "<div class=\"error\"><p>You must choose to either use monerov-wallet-rpc or a ViewKey, not both</p></div>";
+            echo "<div class=\"error\"><p>You must choose to either use byterub-wallet-rpc or a ViewKey, not both</p></div>";
         }
 
     }
@@ -290,12 +290,12 @@ class MoneroV_Gateway extends WC_Payment_Gateway
 
     // Validate fields
 
-    public function check_monerov()
+    public function check_byterub()
     {
-        $monerov_address = $this->settings['monerov_address'];
-        if (strlen($monerov_address) == 95 && substr($monerov_address, 1)) 
+        $byterub_address = $this->settings['byterub_address'];
+        if (strlen($byterub_address) == 95 && substr($byterub_address, 1)) 
         {
-			if($this->cryptonote->verify_checksum($monerov_address))
+			if($this->cryptonote->verify_checksum($byterub_address))
 			{
 				return true;
 			}
@@ -357,15 +357,15 @@ class MoneroV_Gateway extends WC_Payment_Gateway
             $amount = floatval(preg_replace('#[^\d.]#', '', $order->get_total()));
             $payment_id = $this->set_paymentid_cookie(8);
             $currency = $order->get_currency();
-            $amount_xmv2 = $this->changeto($amount, $currency, $payment_id);
+            $amount_btr2 = $this->changeto($amount, $currency, $payment_id);
             $address = $this->address;
             
             $order->update_meta_data( "Payment ID", $payment_id);
-            $order->update_meta_data( "Amount requested (XMV)", $amount_xmv2);
+            $order->update_meta_data( "Amount requested (BTR)", $amount_btr2);
             $order->save();
             
             if (!isset($address)) {
-                // If there isn't address (merchant missed that field!), $address will be the MoneroV address for donating :)
+                // If there isn't address (merchant missed that field!), $address will be the ByteRub address for donating :)
                 $address = "44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A";
             }
 
@@ -377,8 +377,8 @@ class MoneroV_Gateway extends WC_Payment_Gateway
             
             $integrated_addr = $this->cryptonote->integrated_addr_from_keys($pub_spendKey, $pub_viewKey, $payment_id);
             
-            $uri = urlencode("monerov:".$address."?tx_amount=".$amount_xmv2."&tx_payment_id=".$payment_id);                
-            $this->verify_non_rpc($payment_id, $amount_xmv2, $order_id, $this->zero_confirm);
+            $uri = urlencode("byterub:".$address."?tx_amount=".$amount_btr2."&tx_payment_id=".$payment_id);                
+            $this->verify_non_rpc($payment_id, $amount_btr2, $order_id, $this->zero_confirm);
             if($this->confirmed == false)
             {
                echo "<h4><font color=DC143C> We are waiting for your transaction to be confirmed </font></h4>";
@@ -400,19 +400,19 @@ class MoneroV_Gateway extends WC_Payment_Gateway
                 <body>
                 <!-- page container  -->
                 <div class='page-container'>
-                <!-- MoneroV container payment box -->
+                <!-- ByteRub container payment box -->
                 <div class='container-xmr-payment'>
                 <!-- header -->
                 <div class='header-xmr-payment'>
                 <span class='logo-xmr'><img src='http://cdn.monerointegrations.com/logomonero.png' /></span>
-                <span class='xmr-payment-text-header'><h2>MONEROV PAYMENT</h2></span>
+                <span class='xmr-payment-text-header'><h2>BYTERUB PAYMENT</h2></span>
                 </div>
                 <!-- end header -->
                 <!-- xmr content box -->
                 <div class='content-xmr-payment'>
                 <div class='xmr-amount-send'>
                 <span class='xmr-label'>Send:</span>
-                <div class='xmr-amount-box'>".$amount_xmv2."</div>
+                <div class='xmr-amount-box'>".$amount_btr2."</div>
                 </div>
                 <div class='xmr-address'>
                 <span class='xmr-label'>To this address:</span>
@@ -427,11 +427,11 @@ class MoneroV_Gateway extends WC_Payment_Gateway
                 <!-- end content box -->
                 <!-- footer xmr payment -->
                 <div class='footer-xmr-payment'>
-                <a href='https://monerov.org' target='_blank'>Help</a> | <a href='https://monerov.org' target='_blank'>About MoneroV</a>
+                <a href='https://byterub.org' target='_blank'>Help</a> | <a href='https://byterub.org' target='_blank'>About ByteRub</a>
                 </div>
                 <!-- end footer xmr payment -->
                 </div>
-                <!-- end MoneroV container payment box -->
+                <!-- end ByteRub container payment box -->
                 </div>
                 <!-- end page container  -->
                 </body>
@@ -446,20 +446,20 @@ class MoneroV_Gateway extends WC_Payment_Gateway
             $amount = floatval(preg_replace('#[^\d.]#', '', $order->get_total()));
             $payment_id = $this->set_paymentid_cookie(8);
             $currency = $order->get_currency();
-            $amount_xmv2 = $this->changeto($amount, $currency, $payment_id);
+            $amount_btr2 = $this->changeto($amount, $currency, $payment_id);
             
             $order->update_meta_data( "Payment ID", $payment_id);
-            $order->update_meta_data( "Amount requested (XMV)", $amount_xmv2);
+            $order->update_meta_data( "Amount requested (BTR)", $amount_btr2);
             $order->save();
 
-            $uri = urlencode("monerov:".$address."?tx_amount=".$amount_xmv2."&tx_payment_id=".$payment_id);
-            $array_integrated_address = $this->monerov_daemon->make_integrated_address($payment_id);
+            $uri = urlencode("byterub:".$address."?tx_amount=".$amount_btr2."&tx_payment_id=".$payment_id);
+            $array_integrated_address = $this->byterub_daemon->make_integrated_address($payment_id);
             if (!isset($array_integrated_address)) {
-                $this->log->add('MoneroV_Gateway', '[ERROR] Unable get integrated address');
+                $this->log->add('ByteRub_Gateway', '[ERROR] Unable get integrated address');
                 // Seems that we can't connect with daemon, then set array_integrated_address, little hack
                 $array_integrated_address["integrated_address"] = $address;
             }
-            $message = $this->verify_payment($payment_id, $amount_xmv2, $order);
+            $message = $this->verify_payment($payment_id, $amount_btr2, $order);
             if ($this->confirmed) {
                 $color = "006400";
             } else {
@@ -479,19 +479,19 @@ class MoneroV_Gateway extends WC_Payment_Gateway
                 <body>
                 <!-- page container  -->
                 <div class='page-container'>
-                <!-- MoneroV container payment box -->
+                <!-- ByteRub container payment box -->
                 <div class='container-xmr-payment'>
                 <!-- header -->
                 <div class='header-xmr-payment'>
                 <span class='logo-xmr'><img src='http://cdn.monerointegrations.com/logomonero.png' /></span>
-                <span class='xmr-payment-text-header'><h2>MONEROV PAYMENT</h2></span>
+                <span class='xmr-payment-text-header'><h2>BYTERUB PAYMENT</h2></span>
                 </div>
                 <!-- end header -->
                 <!-- xmr content box -->
                 <div class='content-xmr-payment'>
                 <div class='xmr-amount-send'>
                 <span class='xmr-label'>Send:</span>
-                <div class='xmr-amount-box'>".$amount_xmv2."</div>
+                <div class='xmr-amount-box'>".$amount_btr2."</div>
                 </div>
                 <div class='xmr-address'>
                 <span class='xmr-label'>To this address:</span>
@@ -504,13 +504,13 @@ class MoneroV_Gateway extends WC_Payment_Gateway
                 <div class='clear'></div>
                 </div>
                 <!-- end content box -->
-                <!-- footer xmv payment -->
+                <!-- footer btr payment -->
                 <div class='footer-xmr-payment'>
-                <a href='https://monerov.org' target='_blank'>Help</a> | <a href='https://monerov.org' target='_blank'>About MoneroV</a>
+                <a href='https://byterub.org' target='_blank'>Help</a> | <a href='https://byterub.org' target='_blank'>About ByteRub</a>
                 </div>
-                <!-- end footer xmv payment -->
+                <!-- end footer btr payment -->
                 </div>
-                <!-- end MoneroV container payment box -->
+                <!-- end ByteRub container payment box -->
                 </div>
                 <!-- end page container  -->
                 </body>
@@ -564,24 +564,24 @@ class MoneroV_Gateway extends WC_Payment_Gateway
                 $rounded_amount = round($final_amount, 12);
             } else {
                 $new_amount = $amount / $stored_rate_transformed;
-                $rounded_amount = round($new_amount, 12); //the MoneroV wallet can't handle decimals smaller than 0.000000000001
+                $rounded_amount = round($new_amount, 12); //the ByteRub wallet can't handle decimals smaller than 0.000000000001
             }
         } else // If the row has not been created then the live exchange rate will be grabbed and stored
         {
-            $xmv_live_price = $this->retriveprice($currency);
-            $live_for_storing = $xmv_live_price * 100; //This will remove the decimal so that it can easily be stored as an integer
+            $btr_live_price = $this->retriveprice($currency);
+            $live_for_storing = $btr_live_price * 100; //This will remove the decimal so that it can easily be stored as an integer
 
             $wpdb->query("INSERT INTO $payment_id (rate) VALUES ($live_for_storing)");
             if(isset($this->discount))
             {
-               $new_amount = $amount / $xmv_live_price;
+               $new_amount = $amount / $btr_live_price;
                $discount = $new_amount * $this->discount / 100;
                $discounted_price = $new_amount - $discount;
                $rounded_amount = round($discounted_price, 12);
             }
             else
             {
-               $new_amount = $amount / $xmv_live_price;
+               $new_amount = $amount / $btr_live_price;
                $rounded_amount = round($new_amount, 12);
             }
         }
@@ -595,11 +595,11 @@ class MoneroV_Gateway extends WC_Payment_Gateway
 
     public function retriveprice($currency)
     {
-	$api_link = 'https://min-api.cryptocompare.com/data/price?fsym=XMV&tsyms=BTC,USD,EUR,CAD,INR,GBP,COP,SGD' . ',' . $currency . '&extraParams=monerov_woocommerce';
-        $xmv_price = file_get_contents($api_link);
-        $price = json_decode($xmv_price, TRUE);
+	$api_link = 'https://min-api.cryptocompare.com/data/price?fsym=BTR&tsyms=BTC,USD,EUR,CAD,INR,GBP,COP,SGD' . ',' . $currency . '&extraParams=byterub_woocommerce';
+        $btr_price = file_get_contents($api_link);
+        $price = json_decode($btr_price, TRUE);
         if (!isset($price)) {
-            $this->log->add('MoneroV_Gateway', '[ERROR] Unable to get the price of MoneroV');
+            $this->log->add('ByteRub_Gateway', '[ERROR] Unable to get the price of ByteRub');
         }
         switch ($currency) {
             case 'USD':
@@ -618,7 +618,7 @@ class MoneroV_Gateway extends WC_Payment_Gateway
                 return $price['SGD'];
 	    case $currency:
 		return $price[$currency];
-            case 'XMV':
+            case 'BTR':
                 $price = '1';
                 return $price;
         }
@@ -627,15 +627,15 @@ class MoneroV_Gateway extends WC_Payment_Gateway
     private function on_verified($payment_id, $amount_atomic_units, $order_id)
     {
         $message = "Payment has been received and confirmed. Thanks!";
-        $this->log->add('MoneroV_gateway', '[SUCCESS] Payment has been recorded. Congratulations!');
+        $this->log->add('ByteRub_gateway', '[SUCCESS] Payment has been recorded. Congratulations!');
         $this->confirmed = true;
         $order = wc_get_order($order_id);
         
         if($this->is_virtual_in_cart($order_id) == true){
-            $order->update_status('completed', __('Payment has been received.', 'monerov_gateway'));
+            $order->update_status('completed', __('Payment has been received.', 'byterub_gateway'));
         }
         else{
-            $order->update_status('processing', __('Payment has been received.', 'monerov_gateway')); // Show payment id used for order
+            $order->update_status('processing', __('Payment has been received.', 'byterub_gateway')); // Show payment id used for order
         }
         global $wpdb;
         $wpdb->query("DROP TABLE $payment_id"); // Drop the table from database after payment has been confirmed as it is no longer needed
@@ -652,7 +652,7 @@ class MoneroV_Gateway extends WC_Payment_Gateway
          */
         $message = "We are waiting for your payment to be confirmed";
         $amount_atomic_units = $amount * 10000000000000;
-        $get_payments_method = $this->monerov_daemon->get_payments($payment_id);
+        $get_payments_method = $this->byterub_daemon->get_payments($payment_id);
         if (isset($get_payments_method["payments"][0]["amount"])) {
             if ($get_payments_method["payments"][0]["amount"] >= $amount_atomic_units)
             {
@@ -734,14 +734,14 @@ class MoneroV_Gateway extends WC_Payment_Gateway
     {
         $host = $this->settings['daemon_host'];
         $port = $this->settings['daemon_port'];
-        $monerov_library = new MoneroV($host, $port);
-        if ($monerov_library->works() == true) {
-            echo "<div class=\"notice notice-success is-dismissible\"><p>Everything works! Congratulations and welcome to MoneroV. <button type=\"button\" class=\"notice-dismiss\">
+        $byterub_library = new ByteRub($host, $port);
+        if ($byterub_library->works() == true) {
+            echo "<div class=\"notice notice-success is-dismissible\"><p>Everything works! Congratulations and welcome to ByteRub. <button type=\"button\" class=\"notice-dismiss\">
 						<span class=\"screen-reader-text\">Dismiss this notice.</span>
 						</button></p></div>";
 
         } else {
-            $this->log->add('MoneroV_gateway', '[ERROR] Plugin cannot reach wallet RPC.');
+            $this->log->add('ByteRub_gateway', '[ERROR] Plugin cannot reach wallet RPC.');
             echo "<div class=\" notice notice-error\"><p>Error with connection of daemon, see documentation!</p></div>";
         }
     }

@@ -469,7 +469,7 @@ class ed25519
         return $this->scalarmult($this->B, $S) == $this->edwards($R, $this->scalarmult($A, $h));
     }
 
-    // The code below is by the MoneroV-Integrations team
+    // The code below is by the ByteRub-Integrations team
 
     public function scalarmult_base($e)
     {
